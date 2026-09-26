@@ -6,7 +6,7 @@
 ## Sobre
 
 Aplicação fullstack (API Express em camadas + SQLite + frontend Bootstrap com Vanilla JS).
-O domínio do projeto será definido na Semana 2.
+O domínio do projeto foca no gerenciamento de locações de espaços de lazer para finais de semana, temporadas e evento, buscando solucionar a ponte entre proprietários de imóveis no interior e os clientes que procuram locais de descanso, permitindo o controle centalizado de cadastros e o registro das reservas de forma organizada.
 
 ## Estrutura
 
