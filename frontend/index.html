@@ -1,0 +1,262 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Gestão de locação de sítios e imóveis de lazer</title>
+  <!-- Bootstrap 5.3.8 via CDN, com SRI: o navegador confere o hash do arquivo -->
+  <link rel="stylesheet"
+    href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css"
+    integrity="sha384-sRIl4kxILFvY47J16cr9ZwB07vP4J8+LH7qKQnuqkuIAvNWLzeN8tE5YBujZqJLB"
+    crossorigin="anonymous">
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body class="bg-body-tertiary">
+  <header class="bg-primary text-white py-3 mb-4">
+    <div class="container">
+      <h1 class="h3 mb-0">Gestão de locação de sítios e imóveis de lazer</h1>
+      <p class="mb-0 small">SPA em Vanilla JS consumindo a API do backend</p>
+    </div>
+  </header>
+
+  <main class="container">
+    <!-- Resultado das ações (criar, editar, remover) -->
+    <div id="aviso" class="alert d-none" role="status" aria-live="polite"></div>
+
+    <!-- ===================== CLIENTES ===================== -->
+    <section class="row g-4 mb-5" aria-labelledby="titulo-clientes">
+      <!-- Grid de 12 colunas: 4 para o formulário, 8 para a lista -->
+      <div class="col-lg-4">
+        <div class="card shadow-sm">
+          <div class="card-header">
+            <h2 id="titulo-clientes" class="h5 mb-0">Clientes</h2>
+          </div>
+          <form id="form-cliente" class="card-body" novalidate>
+            <div class="mb-3">
+              <label for="cli-nome" class="form-label">Nome</label>
+              <input id="cli-nome" name="nome" type="text" class="form-control" required>
+            </div>
+            <div class="mb-3">
+              <label for="cli-cpf" class="form-label">CPF</label>
+              <input id="cli-cpf" name="cpf" type="text" class="form-control"
+                inputmode="numeric" placeholder="000.000.000-00" required>
+            </div>
+            <div class="mb-3">
+              <label for="cli-email" class="form-label">E-mail (opcional)</label>
+              <input id="cli-email" name="email" type="email" class="form-control">
+            </div>
+            <div class="mb-3">
+              <label for="cli-telefone" class="form-label">Telefone (opcional)</label>
+              <input id="cli-telefone" name="telefone" type="text" class="form-control"
+              inputmode="numeric" placeholder="(00) 00000-0000" required>
+            </div>
+            <div class="d-flex gap-2">
+              <button id="cli-salvar" type="submit" class="btn btn-primary">Cadastrar cliente</button>
+              <button id="cli-cancelar" type="button" class="btn btn-outline-secondary d-none">Cancelar</button>
+            </div>
+          </form>
+        </div>
+      </div>
+
+      <div class="col-lg-8">
+        <div class="card shadow-sm">
+          <div class="card-body">
+            <!-- Os quatro estados da lista: só um aparece por vez -->
+            <div id="clientes-carregando" class="text-center py-4">
+              <div class="spinner-border text-primary" aria-hidden="true"></div>
+              <p class="text-muted mt-2 mb-0">Carregando clientes…</p>
+            </div>
+
+            <div id="clientes-erro" class="alert alert-danger mb-0 d-none" role="alert">
+              <p id="clientes-erro-msg" class="mb-2"></p>
+              <button id="clientes-recarregar" type="button" class="btn btn-sm btn-outline-danger">Tentar de novo</button>
+            </div>
+
+            <p id="clientes-vazio" class="text-muted text-center py-4 mb-0 d-none">
+              Nenhum cliente ainda. Cadastre o primeiro no formulário.
+            </p>
+
+            <div id="clientes-sucesso" class="table-responsive d-none">
+              <table class="table table-hover align-middle mb-0">
+                <thead>
+                  <tr>
+                  <th scope="col">#</th>
+                  <th scope="col">Nome</th>
+                  <th scope="col">CPF</th>
+                  <th scope="col">E-mail</th>
+                  <th scope="col">Telefone</th>
+                  <th scope="col" class="text-end">Ações</th>
+                  </tr>
+                </thead>
+                <tbody id="clientes-linhas"></tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+     <!-- ===================== PROPRIETÁRIOS ===================== -->
+    <section class="row g-4 mb-5" aria-labelledby="titulo-proprietarios">
+      <div class="col-lg-4">
+        <div class="card shadow-sm">
+          <div class="card-header">
+            <h2 id="titulo-proprietarios" class="h5 mb-0">Proprietários</h2>
+          </div>
+          <form id="form-proprietario" class="card-body" novalidate>
+            <div class="mb-3">
+              <label for="prop-nome" class="form-label">Nome</label>
+              <input id="prop-nome" name="nome" type="text" class="form-control" required>
+            </div>
+            <div class="mb-3">
+              <label for="prop-cpf" class="form-label">CPF</label>
+              <input id="prop-cpf" name="cpf" type="text" class="form-control"
+                inputmode="numeric" placeholder="000.000.000-00" required>
+            </div>
+            <div class="mb-3">
+              <label for="prop-email" class="form-label">E-mail (opcional)</label>
+              <input id="prop-email" name="email" type="email" class="form-control">
+            </div>
+            <div class="mb-3">
+              <label for="prop-telefone" class="form-label">Telefone (opcional)</label>
+              <input id="prop-telefone" name="telefone" type="tel" class="form-control"
+                placeholder="(83) 90000-0000">
+            </div>
+            <div class="d-flex gap-2">
+              <button id="prop-salvar" type="submit" class="btn btn-primary">Cadastrar proprietário</button>
+              <button id="prop-cancelar" type="button" class="btn btn-outline-secondary d-none">Cancelar</button>
+            </div>
+          </form>
+        </div>
+      </div>
+
+      <div class="col-lg-8">
+        <div class="card shadow-sm">
+          <div class="card-body">
+            <div id="proprietarios-carregando" class="text-center py-4">
+              <div class="spinner-border text-primary" aria-hidden="true"></div>
+              <p class="text-muted mt-2 mb-0">Carregando proprietários…</p>
+            </div>
+
+            <div id="proprietarios-erro" class="alert alert-danger mb-0 d-none" role="alert">
+              <p id="proprietarios-erro-msg" class="mb-2"></p>
+              <button id="proprietarios-recarregar" type="button" class="btn btn-sm btn-outline-danger">Tentar de novo</button>
+            </div>
+
+            <p id="proprietarios-vazio" class="text-muted text-center py-4 mb-0 d-none">
+              Nenhum proprietário ainda. Cadastre o primeiro no formulário.
+            </p>
+
+            <div id="proprietarios-sucesso" class="table-responsive d-none">
+              <table class="table table-hover align-middle mb-0">
+                <thead>
+                  <tr>
+                    <th scope="col">#</th>
+                    <th scope="col">Nome</th>
+                    <th scope="col">CPF</th>
+                    <th scope="col">E-mail</th>
+                    <th scope="col">Telefone</th>
+                    <th scope="col" class="text-end">Ações</th>
+                  </tr>
+                </thead>
+                <tbody id="proprietarios-linhas"></tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ===================== IMÓVEIS ===================== -->
+    <section class="row g-4 mb-5" aria-labelledby="titulo-imoveis">
+      <div class="col-lg-4">
+        <div class="card shadow-sm">
+          <div class="card-header">
+            <h2 id="titulo-imoveis" class="h5 mb-0">Imóveis</h2>
+          </div>
+          <form id="form-imovel" class="card-body" novalidate>
+            <div class="mb-3">
+              <label for="imovel-proprietario" class="form-label">Proprietário</label>
+              <select id="imovel-proprietario" name="proprietarioId" class="form-select" required>
+                <option value="">Selecione…</option>
+              </select>
+            </div>
+            <div class="mb-3">
+              <label for="imovel-titulo" class="form-label">Título</label>
+              <input id="imovel-titulo" name="titulo" type="text" class="form-control" required>
+            </div>
+            <div class="mb-3">
+              <label for="imovel-localizacao" class="form-label">Localização</label>
+              <input id="imovel-localizacao" name="localizacao" type="text" class="form-control" required>
+            </div>
+            <div class="row g-3 mb-3">
+              <div class="col-6">
+                <label for="imovel-diaria" class="form-label">Diária (R$)</label>
+                <input id="imovel-diaria" name="valorDiaria" type="number" step="0.01" min="0" class="form-control" required>
+              </div>
+              <div class="col-6">
+                <label for="imovel-capacidade" class="form-label">Capacidade</label>
+                <input id="imovel-capacidade" name="capacidade" type="number" step="1" min="1" class="form-control" required>
+              </div>
+            </div>
+            <div class="form-check mb-3">
+              <input id="imovel-disponivel" name="disponivel" type="checkbox" class="form-check-input" checked>
+              <label for="imovel-disponivel" class="form-check-label">Disponível para locação</label>
+            </div>
+            <div class="d-flex gap-2">
+              <button id="imovel-salvar" type="submit" class="btn btn-primary">Cadastrar imóvel</button>
+              <button id="imovel-cancelar" type="button" class="btn btn-outline-secondary d-none">Cancelar</button>
+            </div>
+          </form>
+        </div>
+      </div>
+
+      <div class="col-lg-8">
+        <div class="card shadow-sm">
+          <div class="card-body">
+            <div id="imoveis-carregando" class="text-center py-4">
+              <div class="spinner-border text-primary" aria-hidden="true"></div>
+              <p class="text-muted mt-2 mb-0">Carregando imóveis…</p>
+            </div>
+
+            <div id="imoveis-erro" class="alert alert-danger mb-0 d-none" role="alert">
+              <p id="imoveis-erro-msg" class="mb-2"></p>
+              <button id="imoveis-recarregar" type="button" class="btn btn-sm btn-outline-danger">Tentar de novo</button>
+            </div>
+
+            <p id="imoveis-vazio" class="text-muted text-center py-4 mb-0 d-none">
+              Nenhum imóvel ainda. Cadastre um proprietário e depois o primeiro imóvel.
+            </p>
+
+            <div id="imoveis-sucesso" class="table-responsive d-none">
+              <table class="table table-hover align-middle mb-0">
+                <thead>
+                  <tr>
+                    <th scope="col">#</th>
+                    <th scope="col">Título</th>
+                    <th scope="col">Proprietário</th>
+                    <th scope="col">Localização</th>
+                    <th scope="col" class="text-end">Diária</th>
+                    <th scope="col" class="text-end">Cap.</th>
+                    <th scope="col">Status</th>
+                    <th scope="col" class="text-end">Ações</th>
+                  </tr>
+                </thead>
+                <tbody id="imoveis-linhas"></tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+  <footer class="container text-muted small pb-4">
+    Programação Web · UEPB · 2026.2 · Semana 4
+  </footer>
+
+  <!-- type="module": habilita import/export e só roda depois de o HTML virar DOM -->
+  <script type="module" src="js/main.js"></script>
+</body>
+</html>
