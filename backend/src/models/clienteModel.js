@@ -1,36 +1,38 @@
-// "Banco de dados" em memória: um array. Na S5 vira SQLite.
-let clientes = [];
-let proximoId = 1;
+import { db } from '../db.js';
 
-export const clienteModel = {
-  listar() {
-    return clientes;
-  },
+const COLUNAS = 'id, cpf, nome, email, telefone';
 
-  buscarPorId(id) {
-    return clientes.find((c) => c.id === id) ?? null;
-  },
+function listar() {
+  return db.prepare(`SELECT ${COLUNAS} FROM clientes ORDER BY id`).all();
+}
 
-  existeCpf(cpf) {
-    return clientes.some((c) => c.cpf === cpf);
-  },
+function buscarPorId(id) {
+  return db.prepare(`SELECT ${COLUNAS} FROM clientes WHERE id = ?`).get(id) ?? null;
+}
 
-  inserir({ nome, cpf, email, telefone }) {
-    const novo = { id: proximoId++, nome, cpf, email: email ?? null, telefone: telefone ?? null };
-    clientes.push(novo);
-    return novo;
-  },
+function existeCpf(cpf) {
+  return db.prepare('SELECT 1 FROM clientes WHERE cpf = ?').get(cpf) !== undefined;
+}
 
-  atualizar(id, dados) {
-    const i = clientes.findIndex((c) => c.id === id);
-    if (i === -1) return null;
-    clientes[i] = { ...clientes[i], ...dados, id }; // o id nunca muda
-    return clientes[i];
-  },
+function inserir({ nome, cpf, email, telefone }) {
+  const r = db
+    .prepare('INSERT INTO clientes (cpf, nome, email, telefone) VALUES (?, ?, ?, ?)')
+    .run(cpf, nome, email ?? null, telefone ?? null);
+  return buscarPorId(Number(r.lastInsertRowid));
+}
 
-  remover(id) {
-    const antes = clientes.length;
-    clientes = clientes.filter((c) => c.id !== id);
-    return clientes.length < antes; // true = removeu
-  },
-};
+function atualizar(id, dados) {
+  const atual = buscarPorId(id);
+  if (!atual) return null;
+  const novo = { ...atual, ...dados, id }; // o id nunca muda
+  db.prepare('UPDATE clientes SET cpf = ?, nome = ?, email = ?, telefone = ? WHERE id = ?')
+    .run(novo.cpf, novo.nome, novo.email ?? null, novo.telefone ?? null, id);
+  return buscarPorId(id);
+}
+
+function remover(id) {
+  const r = db.prepare('DELETE FROM clientes WHERE id = ?').run(id);
+  return r.changes > 0; // true = removeu
+}
+
+export const clienteModel = { listar, buscarPorId, existeCpf, inserir, atualizar, remover };

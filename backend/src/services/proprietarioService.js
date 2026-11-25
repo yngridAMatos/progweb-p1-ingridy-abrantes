@@ -1,4 +1,5 @@
 import { proprietarioModel } from '../models/proprietarioModel.js';
+import { imovelModel} from '../models/imovelModel.js';
 import { erro } from '../utils/erro.js';
 
 export const proprietarioService = {
@@ -28,7 +29,14 @@ export const proprietarioService = {
   },
 
   remover(id) {
-    const removido = proprietarioModel.remover(id);
-    if (!removido) throw erro(404, 'Proprietário não encontrado');
-  },
+  // 404 primeiro: não faz sentido falar de imóveis de quem não existe
+  if (!proprietarioModel.buscarPorId(id)) throw erro(404, 'Proprietário não encontrado');
+
+  // Regra: proprietário com imóveis não pode ser removido (409 = conflito de estado)
+  if (imovelModel.listarPorProprietario(id).length > 0) {
+    throw erro(409, 'Este proprietário possui imóveis cadastrados. Remova-os antes.');
+  }
+
+  proprietarioModel.remover(id);
+},
 };

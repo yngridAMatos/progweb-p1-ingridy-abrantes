@@ -1,36 +1,38 @@
-// "Banco de dados" em memória: um array. Na S5 vira SQLite.
-let proprietarios = [];
-let proximoId = 1;
+import { db } from '../db.js';
 
-export const proprietarioModel = {
-  listar() {
-    return proprietarios;
-  },
+const COLUNAS = 'id, cpf, nome, email, telefone';
 
-  buscarPorId(id) {
-    return proprietarios.find((c) => c.id === id) ?? null;
-  },
+function listar() {
+  return db.prepare(`SELECT ${COLUNAS} FROM proprietarios ORDER BY id`).all();
+}
 
-  existeCpf(cpf) {
-    return proprietarios.some((c) => c.cpf === cpf);
-  },
+function buscarPorId(id) {
+  return db.prepare(`SELECT ${COLUNAS} FROM proprietarios WHERE id = ?`).get(id) ?? null;
+}
 
-  inserir({ nome, cpf, email, telefone }) {
-    const novo = { id: proximoId++, nome, cpf, email: email ?? null, telefone: telefone ?? null };
-    proprietarios.push(novo);
-    return novo;
-  },
+function existeCpf(cpf) {
+  return db.prepare('SELECT 1 FROM proprietarios WHERE cpf = ?').get(cpf) !== undefined;
+}
 
-  atualizar(id, dados) {
-    const i = proprietarios.findIndex((c) => c.id === id);
-    if (i === -1) return null;
-    clientes[i] = { ...proprietarios[i], ...dados, id }; // o id nunca muda
-    return proprietarios[i];
-  },
+function inserir({ nome, cpf, email, telefone }) {
+  const r = db
+    .prepare('INSERT INTO proprietarios (cpf, nome, email, telefone) VALUES (?, ?, ?, ?)')
+    .run(cpf, nome, email ?? null, telefone ?? null);
+  return buscarPorId(Number(r.lastInsertRowid));
+}
 
-  remover(id) {
-    const antes = proprietarios.length;
-    proprietarios = proprietarios.filter((c) => c.id !== id);
-    return proprietarios.length < antes; // true = removeu
-  },
-};
+function atualizar(id, dados) {
+  const atual = buscarPorId(id);
+  if (!atual) return null;
+  const novo = { ...atual, ...dados, id }; // o id nunca muda
+  db.prepare('UPDATE proprietarios SET cpf = ?, nome = ?, email = ?, telefone = ? WHERE id = ?')
+    .run(novo.cpf, novo.nome, novo.email ?? null, novo.telefone ?? null, id);
+  return buscarPorId(id);
+}
+
+function remover(id) {
+  const r = db.prepare('DELETE FROM proprietarios WHERE id = ?').run(id);
+  return r.changes > 0; // true = removeu
+}
+
+export const proprietarioModel = { listar, buscarPorId, existeCpf, inserir, atualizar, remover };
