@@ -11,9 +11,9 @@ A plataforma gerencia a locação de sítios e espaços de lazer para temporada.
 
 | Entidade | Atributos | Relacionamentos |
 |---|---|---|
-| Proprietário | id, nome, email, telefone | cadastra e possui vários imóveis |
+| Proprietário | id, cpf, nome, email, telefone | cadastra e possui vários imóveis |
 | Imovel | id, proprietarioId, titulo, localizacao, valorDiaria, capacidade, disponivel | pertence a um proprietario e aparece em várias reservas |
-| Cliente | id, nome, email, telefone | realiza várias reservas |
+| Cliente | id, nome, cpf, email, telefone | realiza várias reservas |
 | Reserva | id, imovelId, clienteId, dataCheckIn, dataCheckOut, valorTotal, status | pertence a um imóvel e a um cliente |
 
 ## 3. Diagrama de classes
