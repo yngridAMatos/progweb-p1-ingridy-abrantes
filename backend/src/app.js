@@ -10,9 +10,10 @@ const app = express();
 
 // --- Middleware global (antes das rotas) ---
 // Em produção, a origem do front vem da variável CORS_ORIGIN.
-app.use(cors({                                // ← novo
-  origin: ['http://localhost:5500', 'http://127.0.0.1:5500'],
-}));
+// Em produção, a origem do front vem da variável CORS_ORIGIN.
+const origens = (process.env.CORS_ORIGIN
+  ?? 'http://localhost:5500,http://127.0.0.1:5500').split(',');
+app.use(cors({ origin: origens }));
 app.use(express.json());
 app.use(logger);
 
